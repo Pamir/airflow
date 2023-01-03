@@ -25,9 +25,9 @@ def get_affinity_rules(label_key, label_value):
                     {
                         "matchExpressions": [
                             {
-                                "key": env,
+                                "key": "env",
                                 "operator": "NotIn",
-                                "values": prod,
+                                "values": "prod",
                             }
                         ]
                     }
@@ -67,7 +67,6 @@ task2 = PythonOperator(
             "memory_limit": "128Mi",
         }
     },
-    labels={"env": "prod"},
     dag=dag,
 )
 
