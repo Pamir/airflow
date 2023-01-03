@@ -1,74 +1,34 @@
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
+from airflow.models import Variable
+from modelTestCI.dags.helper_functions.cpu_stress_time import execute
 
 default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(2),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-
+    'owner': 'Felipe Test',
+    'depends_on_past': False,
+    'start_date': days_ago(0), 
+    'email': ['airflow@example.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 2,
 }
 
-dag = DAG(
-    "node_affinity_sample", default_args=default_args
-)
+resource_config = {"KubernetesExecutor": {"request_memory": "200Mi", 
+                                          "limit_memory": "200Mi", 
+                                          "request_cpu": "200m", 
+                                          "limit_cpu": "200m"}}
 
-# Define a helper function to generate affinity rules
-def get_affinity_rules(label_key, label_value):
-    return {
-        "nodeAffinity": {
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "env",
-                                "operator": "NotIn",
-                                "values": "prod",
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    }
+with DAG(dag_id='std_simple_sample', schedule_interval=None, 
+         tags=['analytics'], default_args=default_args) as dag:
+    
+    task = PythonOperator(
+        task_id='std_simple_sample_task',
+        python_callable=execute,
+        op_args=[20,timetask],
+        start_date=days_ago(0),
+        owner='airflow',
+        executor_config = resource_config
+    )
 
-# Define a task that runs on a node with the "type=fast" label
-def task1_func():
-    print("Hello from task1!")
-
-task1 = PythonOperator(
-    task_id="task1",
-    python_callable=task1_func,
-    executor_config={
-        "KubernetesExecutor": {
-            "affinity": get_affinity_rules("type", "slow"),
-            "memory_request": "64Mi",
-            "memory_limit": "128Mi",
-        }
-    },
-    dag=dag,
-)
-
-# Define a task that runs on a node with the "type=slow" label
-def task2_func():
-    print("Hello from task2!")
-
-task2 = PythonOperator(
-    task_id="task2",
-    python_callable=task2_func,
-    executor_config={
-        "KubernetesExecutor": {
-            "affinity": get_affinity_rules("type", "fast"),
-            "memory_request": "64Mi",
-            "memory_limit": "128Mi",
-        }
-    },
-    dag=dag,
-)
-
-# Set the order of task execution
-task1 >> task2
+    task
