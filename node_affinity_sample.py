@@ -13,7 +13,7 @@ default_args = {
 }
 
 dag = DAG(
-    "node_affinity_sample", default_args=default_args, schedule_interval=timedelta(minutes=10)
+    "node_affinity_sample", default_args=default_args
 )
 
 # Define a helper function to generate affinity rules
