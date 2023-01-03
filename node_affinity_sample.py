@@ -19,15 +19,15 @@ dag = DAG(
 # Define a helper function to generate affinity rules
 def get_affinity_rules(label_key, label_value):
     return {
-        "nodeAffinity": {
+        "podAntiAffinity": {
             "requiredDuringSchedulingIgnoredDuringExecution": {
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
                             {
-                                "key": label_key,
+                                "key": kubernetes_executor,
                                 "operator": "NotIn",
-                                "values": [label_value],
+                                "values": True,
                             }
                         ]
                     }
