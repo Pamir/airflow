@@ -9,7 +9,7 @@ default_args = {
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
-    "retry_delay": timedelta(minutes=5),
+
 }
 
 dag = DAG(
@@ -19,15 +19,15 @@ dag = DAG(
 # Define a helper function to generate affinity rules
 def get_affinity_rules(label_key, label_value):
     return {
-        "podAntiAffinity": {
+        "nodeAffinity": {
             "requiredDuringSchedulingIgnoredDuringExecution": {
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
                             {
-                                "key": kubernetes_executor,
+                                "key": label_key,
                                 "operator": "NotIn",
-                                "values": True,
+                                "values": [label_value],
                             }
                         ]
                     }
@@ -50,6 +50,7 @@ task1 = PythonOperator(
             "memory_limit": "128Mi",
         }
     },
+    labels={"env": "prod"},
     dag=dag,
 )
 
@@ -67,6 +68,7 @@ task2 = PythonOperator(
             "memory_limit": "128Mi",
         }
     },
+    labels={"env": "prod"},
     dag=dag,
 )
 
