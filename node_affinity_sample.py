@@ -193,7 +193,7 @@ if k8s:
                     k8s.V1PodAffinityTerm(
                         label_selector=k8s.V1LabelSelector(
                             match_expressions=[
-                                k8s.V1LabelSelectorRequirement(key="app", operator="In", values=["airflow"])
+                                k8s.V1LabelSelectorRequirement(key="release", operator="In", values=["stable"])
                             ]
                         ),
                         topology_key="kubernetes.io/hostname",
